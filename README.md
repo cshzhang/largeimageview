@@ -9,37 +9,38 @@ LargeImageView超大图的显示Demo
 其实对于图片还有一种加载情况，就是单个图片非常巨大且不允许压缩。比如显示：世界地图，清明上河图...
 那么对于这种需求该如何实现？
 首先不压缩，按照原图尺寸加载，那么屏幕肯定不够大，所以肯定是局部加载，那么肯定用到一个类：
-``java
+```java
 BitmapRegionRecoder
-``
+```
 其次，既然屏幕显示不完全，就需要添加Move手势检查，让用户可以拖动查看。
 
-#效果图
+# 效果图
 <img src="xxx.gif" width="320px">
 
 #BitmapRegionRecoder简单使用
 BitmapRegionRecoder主要用于显示图片的某一块矩形区域。
 BitmapRegionDecoder提供一系列构造方法来初始化该对象，支持传入文件路径，文件描述符，文件的inputstream等。
 例如：
-``java
+```java
 BitmapRegionDecoder bitmapRegionDecoder =
   BitmapRegionDecoder.newInstance(inputStream, false);
-``
+```
 
 接下来就是显示指定区域的方法：
-``java
+```java
 bitmapRegionDecoder.decodeRegion(rect, options);
-``
+```
 参数一是一个rect，参数二是BitmapFactory.Options,可以控制inSampleSize,inPreferredConfig等。
 
-#自定义View显示大图
+# 自定义View显示大图
 思路：
-*提供一个设置图片的入口
-*重写onTouchEvent()方法，根据用户移动的手势，去更新显示区域的Rect
-*每次更新Rect之后，调用invalidate方法，重写onDraw(),在里面去regionDecoder.decodeRegion(rect, options)实现绘制
+
+* 提供一个设置图片的入口
+* 重写onTouchEvent()方法，根据用户移动的手势，去更新显示区域的Rect
+* 每次更新Rect之后，调用invalidate方法，重写onDraw(),在里面去regionDecoder.decodeRegion(rect, options)实现绘制
 
 上代码：
-``java
+```java
 public class LargeImageView extends View
 {
     /**
@@ -191,21 +192,22 @@ public class LargeImageView extends View
         canvas.drawBitmap(bitmap, 0, 0, null);
     }
 }
-``
+```
 根据上述代码
-*getImageInputStream里面获取图片的真实高度，初始化mDecoder
-*onMeasure里面初始化mRect，大小为view的尺寸，并且显示图片中间区域
-*onTouchEvent里面监听Move手势，在监听的回调里面改变Rect参数，以及边界检查，最后invalidate
-*onDraw里面拿到最新rect对应的bitmap，进行绘制
+
+* getImageInputStream里面获取图片的真实高度，初始化mDecoder
+* onMeasure里面初始化mRect，大小为view的尺寸，并且显示图片中间区域
+* onTouchEvent里面监听Move手势，在监听的回调里面改变Rect参数，以及边界检查，最后invalidate
+* onDraw里面拿到最新rect对应的bitmap，进行绘制
 
 OK，上面并不复杂；但是监听Move的方法有点奇怪：
-``java
+```java
 mMoveGestureDetector.onTouchEvent(event);
-``
+```
 嗯，这里模仿了系统的ScaleGestureDetector编写了MoveGestureDetector
 
 MoveGestureDetector代码如下：
-``java
+```java
 public class MoveGestureDetector
 {
     private Context mContext;
@@ -359,11 +361,11 @@ public class MoveGestureDetector
         }
     }
 }
-``
+```
 简单分析一下：
-*OnMoveGestureListener内部接口以及SimpleMoveGestureDetector内部类都是模仿系统ScaleGestureDetector设计
-*构造方法MoveGestureDetector(Context context, OnMoveGestureListener listener)要求用户初始化OnMoveGestureListener并传递进来
-*对外公布onTouchEvent()，外部必须调用该方法，并把最新的event传递进来；
-*对外公布getMoveX()，getMoveY()，外部可以通过这两个方法，拿到Move时候最新的deltaX和deltaY
-*updateStateByEvent(event)根据最新的event，更新mDeltaPointer.x和mDeltaPointer.y
-*剩余的方法：handleStartEvent(MotionEvent)；handleProgressEvent(MotionEvent)主要就是记录mPreMotionEvent，调用updateStateByEvent(MotionEvent)等来实现逻辑功能
+* OnMoveGestureListener内部接口以及SimpleMoveGestureDetector内部类都是模仿系统ScaleGestureDetector设计
+* 构造方法MoveGestureDetector(Context context, OnMoveGestureListener listener)要求用户初始化OnMoveGestureListener并传递进来
+* 对外公布onTouchEvent()，外部必须调用该方法，并把最新的event传递进来；
+* 对外公布getMoveX()，getMoveY()，外部可以通过这两个方法，拿到Move时候最新的deltaX和deltaY
+* updateStateByEvent(event)根据最新的event，更新mDeltaPointer.x和mDeltaPointer.y
+* 剩余的方法：handleStartEvent(MotionEvent)；handleProgressEvent(MotionEvent)主要就是记录mPreMotionEvent，调用updateStateByEvent(MotionEvent)等来实现逻辑功能
