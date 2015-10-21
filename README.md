@@ -1,10 +1,10 @@
 # largeimageview
 LargeImageView超大图的显示Demo
 
-#概述
+# 概述
 对于加载图片，一般为了尽可能避免OOM都会按照如下做法：
-*对于图片显示：根据显示图片的控件大小对图片进行压缩；
-*对于图片数量非常多：使用LruCache等缓存机制，将一些图片维持在内存中；
+* 对于图片显示：根据显示图片的控件大小对图片进行压缩；
+* 对于图片数量非常多：使用LruCache等缓存机制，将一些图片维持在内存中；
 
 其实对于图片还有一种加载情况，就是单个图片非常巨大且不允许压缩。比如显示：世界地图，清明上河图...
 那么对于这种需求该如何实现？
@@ -15,7 +15,7 @@ BitmapRegionRecoder
 其次，既然屏幕显示不完全，就需要添加Move手势检查，让用户可以拖动查看。
 
 # 效果图
-<img src="xxx.gif" width="320px">
+<img src="largeimageview.gif" width="320px">
 
 #BitmapRegionRecoder简单使用
 BitmapRegionRecoder主要用于显示图片的某一块矩形区域。
@@ -34,7 +34,6 @@ bitmapRegionDecoder.decodeRegion(rect, options);
 
 # 自定义View显示大图
 思路：
-
 * 提供一个设置图片的入口
 * 重写onTouchEvent()方法，根据用户移动的手势，去更新显示区域的Rect
 * 每次更新Rect之后，调用invalidate方法，重写onDraw(),在里面去regionDecoder.decodeRegion(rect, options)实现绘制
@@ -194,7 +193,6 @@ public class LargeImageView extends View
 }
 ```
 根据上述代码
-
 * getImageInputStream里面获取图片的真实高度，初始化mDecoder
 * onMeasure里面初始化mRect，大小为view的尺寸，并且显示图片中间区域
 * onTouchEvent里面监听Move手势，在监听的回调里面改变Rect参数，以及边界检查，最后invalidate
